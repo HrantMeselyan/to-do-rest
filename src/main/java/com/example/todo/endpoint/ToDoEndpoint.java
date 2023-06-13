@@ -8,6 +8,7 @@ import com.example.todo.entity.Todo;
 import com.example.todo.mapper.TodoMapper;
 import com.example.todo.repository.TodoRepository;
 import com.example.todo.security.CurrentUser;
+import com.example.todo.service.TodoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,22 +22,19 @@ import java.util.List;
 public class ToDoEndpoint {
     private final TodoRepository todoRepository;
     private final TodoMapper todoMapper;
+    private final TodoService todoService;
 
     @PostMapping()
     public ResponseEntity<TodoResponseDto> create(@RequestBody TodoRequestDto todoRequestDto, @AuthenticationPrincipal CurrentUser currentUser) {
-        todoRequestDto.setUser(currentUser.getUser());
-        todoRequestDto.setStatus(Status.NOT_STARTED);
-        Todo save = todoRepository.save(todoMapper.map(todoRequestDto));
-        return ResponseEntity.ok(todoMapper.map(save));
+        return ResponseEntity.ok(todoService.create(todoRequestDto, currentUser.getUser()));
     }
 
     @GetMapping()
     public ResponseEntity<List<TodoResponseDto>> getAll(@AuthenticationPrincipal CurrentUser currentUser) {
-        List<Todo> allByUserId = todoRepository.getAllByUser_Id(currentUser.getUser().getId());
-        if (allByUserId.size() == 0) {
+        if (todoService.getAll(currentUser.getUser().getId()) == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(todoMapper.mapList(allByUserId));
+        return ResponseEntity.ok(todoService.getAll(currentUser.getUser().getId()));
     }
 
     @GetMapping("/byStatus")
