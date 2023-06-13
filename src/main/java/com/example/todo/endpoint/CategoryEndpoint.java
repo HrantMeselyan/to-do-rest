@@ -1,11 +1,11 @@
 package com.example.todo.endpoint;
 
-import com.example.todo.dto.CategoryDto;
 import com.example.todo.dto.CategoryRequestDto;
 import com.example.todo.dto.CategoryResponseDto;
 import com.example.todo.entity.Category;
 import com.example.todo.mapper.CategoryMapper;
 import com.example.todo.repository.CategoryRepository;
+import com.example.todo.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,11 +18,11 @@ import java.util.List;
 public class CategoryEndpoint {
     public final CategoryRepository categoryRepository;
     public final CategoryMapper categoryMapper;
+    private final CategoryService categoryService;
 
     @PostMapping()
     public ResponseEntity<CategoryResponseDto> createCategory(@RequestBody CategoryRequestDto categoryRequestDto) {
-        Category savedCategory = categoryRepository.save(categoryMapper.map(categoryRequestDto));
-        return ResponseEntity.ok(categoryMapper.map(savedCategory));
+        return ResponseEntity.ok(categoryService.save(categoryRequestDto));
     }
 
     @GetMapping()
