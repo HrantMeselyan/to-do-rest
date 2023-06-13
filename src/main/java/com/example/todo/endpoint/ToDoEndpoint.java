@@ -48,7 +48,7 @@ public class ToDoEndpoint {
 
     @GetMapping("/byCategory")
     public ResponseEntity<List<TodoResponseDto>> getByCategory(@RequestParam int categoryId, @AuthenticationPrincipal CurrentUser currentUser) {
-        List<Todo> allByCategoryIdAndUserId = todoRepository.findAllByCategoryIdAndUserId(categoryId, currentUser.getUser().getId());
+        List<Todo> allByCategoryIdAndUserId = todoService.findAllByCategoryIdAndUserId(categoryId, currentUser.getUser().getId());
         if (allByCategoryIdAndUserId.size() == 0) {
             return ResponseEntity.notFound().build();
         }
@@ -57,15 +57,12 @@ public class ToDoEndpoint {
 
     @PutMapping("/id")
     public ResponseEntity<TodoDto> update(@RequestBody TodoDto todoDto, @AuthenticationPrincipal CurrentUser currentUser) {
-        Todo save = todoRepository.save(todoMapper.map(todoDto));
-        return ResponseEntity.ok(todoMapper.mapToDto(save));
+        return ResponseEntity.ok(todoService.save(todoDto, currentUser.getUser().getId()));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable int id, @AuthenticationPrincipal CurrentUser currentUser) {
-        Todo todo = todoRepository.getById(id);
-        if (currentUser.getUser().getId() == todo.getId()) {
-            todoRepository.deleteById(id);
+        if (todoService.delete(id, currentUser.getUser().getId())) {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
