@@ -27,14 +27,12 @@ public class CategoryEndpoint {
 
     @GetMapping()
     public ResponseEntity<List<CategoryResponseDto>> getAll() {
-        List<Category> all = categoryRepository.findAll();
-        return ResponseEntity.ok(categoryMapper.mapToList(all));
+        return ResponseEntity.ok(categoryService.findAll());
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteCategory(@PathVariable("id") int id) {
-        if (categoryRepository.existsById(id)) {
-            categoryRepository.deleteById(id);
+        if (categoryService.delete(id)) {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
