@@ -10,6 +10,7 @@ import com.example.todo.entity.User;
 import com.example.todo.mapper.UserMapper;
 import com.example.todo.repository.UserRepository;
 import com.example.todo.security.CurrentUser;
+import com.example.todo.service.UserService;
 import com.example.todo.util.JwtTokenUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -29,10 +30,11 @@ public class UserEndpoint {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenUtil tokenUtil;
     private final UserMapper userMapper;
+    private final UserService userService;
 
     @PostMapping("/auth")
     public ResponseEntity<UserAuthResponseDto> auth(@RequestBody UserAuthRequestDto userAuthRequestDto) {
-        Optional<User> byEmail = userRepository.findByEmail(userAuthRequestDto.getEmail());
+        Optional<User> byEmail = userService.findByEmail(userAuthRequestDto.getEmail());
         if (byEmail.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -46,20 +48,19 @@ public class UserEndpoint {
 
     @PostMapping("/register")
     public ResponseEntity<UserDto> register(@RequestBody CreateUserRequestDto createUserRequestDto) {
-        Optional<User> byEmail = userRepository.findByEmail(createUserRequestDto.getEmail());
+        Optional<User> byEmail = userService.findByEmail(createUserRequestDto.getEmail());
         if (byEmail.isPresent()) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
         User user = userMapper.map(createUserRequestDto);
         user.setPassword(passwordEncoder.encode(createUserRequestDto.getPassword()));
         user.setRole(Role.USER);
-        userRepository.save(user);
-        return ResponseEntity.ok(userMapper.mapToDto(user));
+        return ResponseEntity.ok(userMapper.mapToDto(userService.save(user)));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<UserDto> user(@PathVariable("id") int id) {
-        Optional<User> byId = userRepository.findById(id);
+        Optional<User> byId = userService.findById(id);
         if (byId.isPresent()) {
             return ResponseEntity.ok(userMapper.mapToDto(byId.get()));
         }
@@ -68,8 +69,7 @@ public class UserEndpoint {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteUser(@PathVariable("id") int id, @AuthenticationPrincipal CurrentUser currentUser) {
-        if (currentUser.getUser().getId() == id && userRepository.existsById(id)) {
-            userRepository.deleteById(id);
+        if (userService.delete(id,currentUser.getUser().getId())) {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
@@ -77,11 +77,11 @@ public class UserEndpoint {
 
     @PutMapping("/{id}")
     public ResponseEntity<UserDto> updateUser(@PathVariable("id") int id, @RequestBody CreateUserRequestDto user) {
-        Optional<User> byId = userRepository.findById(id);
+        Optional<User> byId = userService.findById(id);
         if (byId.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        Optional<User> byEmail = userRepository.findByEmail(user.getEmail());
+        Optional<User> byEmail = userService.findByEmail(user.getEmail());
         if (byEmail.isPresent() && byEmail.get().getId() != id) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
@@ -99,7 +99,7 @@ public class UserEndpoint {
             userFromDb.setPassword(passwordEncoder.encode(user.getPassword()));
         }
         userFromDb.setRole(Role.USER);
-        return ResponseEntity.ok(userMapper.mapToDto(userRepository.save(userFromDb)));
+        return ResponseEntity.ok(userMapper.mapToDto(userService.save(userFromDb)));
     }
 
 }

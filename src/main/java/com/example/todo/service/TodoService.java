@@ -18,4 +18,6 @@ public interface TodoService {
     TodoDto save(TodoDto todoDto, int id);
 
     boolean delete(int id, int userId);
+
+    List<Todo> findAllByUserIdAndStatus(int id, String status);
 }

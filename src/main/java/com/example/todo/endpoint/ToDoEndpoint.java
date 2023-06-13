@@ -3,7 +3,6 @@ package com.example.todo.endpoint;
 import com.example.todo.dto.TodoDto;
 import com.example.todo.dto.TodoRequestDto;
 import com.example.todo.dto.TodoResponseDto;
-import com.example.todo.entity.Status;
 import com.example.todo.entity.Todo;
 import com.example.todo.mapper.TodoMapper;
 import com.example.todo.repository.TodoRepository;
@@ -20,7 +19,6 @@ import java.util.List;
 @RequestMapping("/todo")
 @RequiredArgsConstructor
 public class ToDoEndpoint {
-    private final TodoRepository todoRepository;
     private final TodoMapper todoMapper;
     private final TodoService todoService;
 
@@ -39,7 +37,7 @@ public class ToDoEndpoint {
 
     @GetMapping("/byStatus")
     public ResponseEntity<List<TodoResponseDto>> getByStatus(@RequestParam String status, @AuthenticationPrincipal CurrentUser currentUser) {
-        List<Todo> allByUserIdAndStatus = todoRepository.findAllByUserIdAndStatus(currentUser.getUser().getId(), status);
+        List<Todo> allByUserIdAndStatus = todoService.findAllByUserIdAndStatus(currentUser.getUser().getId(), status);
         if (allByUserIdAndStatus.size() == 0) {
             return ResponseEntity.notFound().build();
         }

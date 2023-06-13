@@ -61,4 +61,9 @@ public class TodoImpl implements TodoService {
         }
         return delete;
     }
+
+    @Override
+    public List<Todo> findAllByUserIdAndStatus(int id, String status) {
+       return todoRepository.findAllByUserIdAndStatus(id,status);
+    }
 }
