@@ -26,7 +26,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserEndpoint {
 
-    private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenUtil tokenUtil;
     private final UserMapper userMapper;
@@ -53,8 +52,6 @@ public class UserEndpoint {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
         User user = userMapper.map(createUserRequestDto);
-        user.setPassword(passwordEncoder.encode(createUserRequestDto.getPassword()));
-        user.setRole(Role.USER);
         return ResponseEntity.ok(userMapper.mapToDto(userService.save(user)));
     }
 
